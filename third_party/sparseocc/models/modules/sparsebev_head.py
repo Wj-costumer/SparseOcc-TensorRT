@@ -7,7 +7,7 @@ from mmdet.models import HEADS
 from mmdet.models.dense_heads import DETRHead
 from mmdet3d.core.bbox.coders import build_bbox_coder
 from mmdet3d.core.bbox.structures.lidar_box3d import LiDARInstance3DBoxes
-from .bbox.utils import normalize_bbox, encode_bbox
+from ..bbox.utils import normalize_bbox, encode_bbox
 
 
 @HEADS.register_module()

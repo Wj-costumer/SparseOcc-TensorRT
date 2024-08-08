@@ -6,7 +6,7 @@ from mmcv.runner.fp16_utils import cast_tensor_type
 from mmcv.runner import force_fp32, auto_fp16
 from mmdet.models import DETECTORS
 from mmdet3d.models.detectors.mvx_two_stage import MVXTwoStageDetector
-from .utils import pad_multiple, GpuPhotoMetricDistortion
+from ..utils import pad_multiple, GpuPhotoMetricDistortion
 
 
 @DETECTORS.register_module()

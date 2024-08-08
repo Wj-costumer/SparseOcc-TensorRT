@@ -3,8 +3,8 @@ import torch.nn as nn
 from mmcv.runner import BaseModule
 from mmcv.cnn.bricks.transformer import FFN
 from .sparsebev_transformer import SparseBEVSelfAttention, SparseBEVSampling, AdaptiveMixing
-from .utils import DUMP, generate_grid, batch_indexing
-from .bbox.utils import encode_bbox
+from ..utils import DUMP, generate_grid, batch_indexing
+from ..bbox.utils import encode_bbox
 import torch.nn.functional as F
 
 

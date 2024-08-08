@@ -6,10 +6,10 @@ from mmcv.runner import BaseModule
 from mmcv.cnn import bias_init_with_prob
 from mmcv.cnn.bricks.transformer import MultiheadAttention, FFN
 from mmdet.models.utils.builder import TRANSFORMER
-from .bbox.utils import decode_bbox
-from .utils import inverse_sigmoid, DUMP
+from ..bbox.utils import decode_bbox
+from ..utils import inverse_sigmoid, DUMP
 from .sparsebev_sampling import sampling_4d, make_sample_points_from_bbox
-from .checkpoint import checkpoint as cp
+from ..checkpoint import checkpoint as cp
 
 
 @TRANSFORMER.register_module()

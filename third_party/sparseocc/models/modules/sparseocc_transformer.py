@@ -6,8 +6,8 @@ from mmcv.runner import BaseModule
 from mmdet.models.utils.builder import TRANSFORMER
 from mmcv.cnn.bricks.transformer import FFN
 from .sparsebev_transformer import AdaptiveMixing
-from .utils import DUMP
-from .checkpoint import checkpoint as cp
+from ..utils import DUMP
+from ..checkpoint import checkpoint as cp
 from .sparsebev_sampling import sampling_4d, make_sample_points_from_mask
 from .sparse_voxel_decoder import SparseVoxelDecoder
 

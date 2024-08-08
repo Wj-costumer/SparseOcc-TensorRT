@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmdet.models.builder import LOSSES, build_loss
 from mmdet.core import reduce_mean
-from .utils import sparse2dense
+from ..utils import sparse2dense
 from torch.cuda.amp import autocast
 from torch.autograd import Variable
 

@@ -1,6 +1,5 @@
 import torch 
 
-
 def normalize_bbox(bboxes):
     cx = bboxes[..., 0:1]
     cy = bboxes[..., 1:2]
