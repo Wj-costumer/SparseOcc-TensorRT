@@ -26,8 +26,11 @@ def pytorch2onnx(
     onnx_shapes = config.default_shapes
     input_shapes = config.input_shapes
     output_shapes = config.output_shapes
-    dynamic_axes = config.dynamic_axes
-
+    if 'dynamic_axes' in config:
+        dynamic_axes = config.dynamic_axes
+    else:
+        dynamic_axes = None
+        
     for key in onnx_shapes:
         if key in locals():
             raise RuntimeError(f"Variable {key} has been defined.")
@@ -58,7 +61,7 @@ def pytorch2onnx(
                                          'data/nuscenes/samples/CAM_BACK_RIGHT/n008-2018-08-01-15-16-36-0400__CAM_BACK_RIGHT__1533151603528113.jpg'] * 8)
     
     model.forward = model.forward_trt
-    input_name = list(input_shapes.keys()).append('img_filenames')
+    input_name = list(inputs.keys())
     output_name = list(output_shapes.keys())
 
     inputs = tuple(inputs.values())
@@ -74,7 +77,7 @@ def pytorch2onnx(
         do_constant_folding=False,
         verbose=verbose,
         opset_version=opset_version,
-        dynamic_axes=dynamic_axes,
+        # dynamic_axes=dynamic_axes,
         operator_export_type=OperatorExportTypes.ONNX_FALLTHROUGH,
     )
 

@@ -1,6 +1,5 @@
-from ..third_party.sparseocc.models import SparseBEVSampling
+from third_party.sparseocc.models import SparseBEVSampling, sampling_4d, make_sample_points_from_bbox
 import torch
-from ..third_party.sparseocc.models import sampling_4d, make_sample_points_from_bbox
 
 class SparseBEVSamplingTRT(SparseBEVSampling):
     def __init__(self, 
@@ -9,16 +8,15 @@ class SparseBEVSamplingTRT(SparseBEVSampling):
                  num_points=None,
                  num_groups=None,
                  num_levels=None,
-                 pc_range=None,
-                 self_attn=True):
-        super(SparseBEVSamplingTRT, self).__init__(
+                 pc_range=None
+                ):
+        super().__init__(
             embed_dims=embed_dims,
             num_frames=num_frames,
             num_points=num_points,
             num_groups=num_groups,
             num_levels=num_levels,
-            pc_range=pc_range,
-            self_attn=self_attn
+            pc_range=pc_range
             )
     
     def inner_forward(self, query_bbox, query_feat, mlvl_feats, img_shape, lidar2img):
@@ -68,9 +66,9 @@ class SparseBEVSamplingTRT(SparseBEVSampling):
 
         return sampled_feats
     
-    def forward(self, query_bbox, query_feat, mlvl_feats, lidar2img):
+    def forward(self, query_bbox, query_feat, mlvl_feats, img_shape, lidar2img):
         # if self.training and query_feat.requires_grad:
         #     return cp(self.inner_forward, query_bbox, query_feat, mlvl_feats, img_metas, use_reentrant=False)
         # else:
         #     return self.inner_forward(query_bbox, query_feat, mlvl_feats, img_metas)
-        return self.inner_forward(query_bbox, query_feat, mlvl_feats, lidar2img)
+        return self.inner_forward(query_bbox, query_feat, mlvl_feats, img_shape, lidar2img)

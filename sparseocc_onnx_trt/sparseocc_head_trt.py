@@ -1,5 +1,8 @@
-from ..third_party.sparseocc.models import SparseOccHead
+import sys
+from third_party.sparseocc.models.modules import SparseOccHead
+from mmdet.models import DETECTORS
 
+@DETECTORS.register_module()
 class SparseOccHeadTRT(SparseOccHead):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

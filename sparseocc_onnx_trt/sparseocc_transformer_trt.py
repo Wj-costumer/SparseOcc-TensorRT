@@ -1,40 +1,32 @@
-from ..third_party.sparseocc.models import SparseOccTransformer, MaskFormerOccDecoder, MaskFormerOccDecoderLayer, MaskFormerSampling
-from sparseocc_voxel_decoder_trt import SparseVoxelDecoderTRT
-from ..third_party.sparseocc.models import sampling_4d, make_sample_points_from_mask
+from third_party.sparseocc.models import SparseOccTransformer, MaskFormerOccDecoder, MaskFormerOccDecoderLayer, MaskFormerSampling, sampling_4d, make_sample_points_from_mask
+from .sparseocc_voxel_decoder_trt import SparseVoxelDecoderTRT
+from mmdet.models.utils.builder import TRANSFORMER
 import torch
 import numpy as np
 import copy
 from .utils import DUMP
 
+
+@TRANSFORMER.register_module()
 class SparseOccTransformerTRT(SparseOccTransformer):
     def __init__(self, 
-                 embed_dims=None,
-                 num_layers=None,
-                 num_queries=None,
-                 num_frames=None,
-                 num_points=None,
-                 num_groups=None,
-                 num_levels=None,
-                 num_classes=None,
-                 pc_range=None,
-                 occ_size=None,
-                 topk_training=None,
-                 topk_testing=None):
+                 embed_dims,
+                 num_layers,
+                 num_queries,
+                 num_frames,
+                 num_points,
+                 num_groups,
+                 num_levels,
+                 num_classes,
+                 pc_range,
+                 occ_size,
+                 topk_training,
+                 topk_testing,
+                 **kwargs):
         super(SparseOccTransformerTRT, self).__init__(
-            embed_dims=embed_dims,
-            num_classes=num_classes,
-            num_layers=num_layers,
-            num_queries=num_queries,
-            num_frames=num_frames,
-            num_points=num_points,
-            num_groups=num_groups,
-            num_levels=num_levels,  
-            pc_range=pc_range,
-            occ_size=occ_size,
-            topk_training=topk_training,
-            topk_testing=topk_testing
-        )
-
+            embed_dims, num_layers, num_queries, num_frames, num_points, num_groups,
+            num_levels, num_classes, pc_range, occ_size, topk_training, topk_testing)
+        
         self.voxel_decoder = SparseVoxelDecoderTRT(
             embed_dims=embed_dims,
             num_layers=3,
@@ -47,6 +39,18 @@ class SparseOccTransformerTRT(SparseOccTransformer):
             semantic=True,
             topk_training=topk_training,
             topk_testing=topk_testing
+        )
+        self.decoder = MaskFormerOccDecoderTRT(
+            embed_dims=embed_dims,
+            num_layers=num_layers,
+            num_frames=num_frames,
+            num_queries=num_queries,
+            num_points=num_points,
+            num_groups=num_groups,
+            num_levels=num_levels,
+            num_classes=num_classes,
+            pc_range=pc_range,
+            occ_size=occ_size,
         )
         
     def forward(self, mlvl_feats, img_shape, lidar2img, ego2lidar):
@@ -65,7 +69,6 @@ class SparseOccTransformerTRT(SparseOccTransformer):
         
         # img_metas = copy.deepcopy(img_metas)
         # img_metas[0]['lidar2img'] = torch.matmul(lidar2img, ego2lidar)
-        
         lidar2img = torch.matmul(lidar2img, ego2lidar) # [B, N, 4, 4]
         occ_preds = self.voxel_decoder(mlvl_feats, img_shape, lidar2img)
         mask_preds, class_preds = self.decoder(occ_preds, mlvl_feats, img_shape, lidar2img)
@@ -144,7 +147,7 @@ class MaskFormerOccDecoderLayerTRT(MaskFormerOccDecoderLayer):
                  num_classes=None,
                  pc_range=None,
                  occ_size=None):
-        super(MaskFormerOccDecoderLayer, self).__init__(
+        super().__init__(
             embed_dims=embed_dims,
             mask_dim=mask_dim,
             num_frames=num_frames,
@@ -152,7 +155,7 @@ class MaskFormerOccDecoderLayerTRT(MaskFormerOccDecoderLayer):
             num_points=num_points,
             num_groups=num_groups,
             num_levels=num_levels,
-            num_classes=num_classes
+            num_classes=num_classes,
             pc_range=pc_range,
             occ_size=occ_size
         )
@@ -197,7 +200,7 @@ class MaskFormerOccDecoderLayerTRT(MaskFormerOccDecoderLayer):
     
 class MaskFormerSamplingTRT(MaskFormerSampling):
     def __init__(self, embed_dims=256, num_frames=4, num_groups=4, num_points=8, num_levels=4, pc_range=[], occ_size=[], init_cfg=None):
-        super(MaskFormerSamplingTRT, self).__init__(
+        super().__init__(
             embed_dims=embed_dims,
             num_frames=num_frames,
             num_groups=num_groups,

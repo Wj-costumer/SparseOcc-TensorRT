@@ -5,7 +5,7 @@ from mmdet.models import HEADS
 from mmcv.runner import force_fp32, auto_fp16
 from mmdet.models.builder import build_loss
 from mmdet.models.utils import build_transformer
-from .matcher import HungarianMatcher
+from ..matcher import HungarianMatcher
 from .loss_utils import CE_ssc_loss, lovasz_softmax, get_voxel_decoder_loss_input
 
 

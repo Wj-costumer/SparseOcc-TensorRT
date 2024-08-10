@@ -1,7 +1,6 @@
-from ..third_party.sparseocc.models import SparseVoxelDecoder, SparseVoxelDecoderLayer, index2point, point2bbox, upsample
+from third_party.sparseocc.models import SparseVoxelDecoder, SparseVoxelDecoderLayer, index2point, point2bbox, upsample, encode_bbox
 from .utils import DUMP, generate_grid, batch_indexing
-from ..third_party.sparseocc.models import encode_bbox
-from sparsebev_transformer_trt import SparseBEVSamplingTRT
+from .sparsebev_transformer_trt import SparseBEVSamplingTRT
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,7 +18,7 @@ class SparseVoxelDecoderTRT(SparseVoxelDecoder):
                  topk_training=None,
                  topk_testing=None,
                  pc_range=None):
-        super(SparseVoxelDecoderTRT, self).__init__(
+        super().__init__(
             embed_dims=embed_dims,
             num_layers=num_layers,
             num_frames=num_frames,
@@ -63,8 +62,8 @@ class SparseVoxelDecoderTRT(SparseVoxelDecoder):
         occ_preds = []
         
         topk = self.topk_training if self.training else self.topk_testing
-        
-        B = img_shape.shape[0]
+
+        B = 1
         # init query coords
         interval = 2 ** self.num_layers
         query_coord = generate_grid(self.voxel_dim, interval).expand(B, -1, -1)  # [B, N, 3]
@@ -122,7 +121,7 @@ class SparseVoxelDecoderLayerTRT(SparseVoxelDecoderLayer):
                  num_levels=None,
                  pc_range=None,
                  self_attn=True):
-        super(SparseVoxelDecoderTRT, self).__init__(
+        super().__init__(
             embed_dims=embed_dims,
             num_frames=num_frames,
             num_points=num_points,
@@ -131,7 +130,7 @@ class SparseVoxelDecoderLayerTRT(SparseVoxelDecoderLayer):
             pc_range=pc_range,
             self_attn=self_attn
         )
-        
+
         self.sampling = SparseBEVSamplingTRT(
             embed_dims=embed_dims,
             num_frames=num_frames,
@@ -142,6 +141,7 @@ class SparseVoxelDecoderLayerTRT(SparseVoxelDecoderLayer):
         )
         
     def forward(self, query_feat, query_bbox, mlvl_feats, img_shape, lidar2img):
+        breakpoint()
         query_pos = self.position_encoder(query_bbox[..., :3])
         query_feat = query_feat + query_pos
 

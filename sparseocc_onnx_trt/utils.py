@@ -38,8 +38,9 @@ def sparse2dense(indices, value, dense_shape, empty_value=0):
 def generate_grid(n_vox, interval):
     # Create voxel grid
     grid_range = [torch.arange(0, n_vox[axis], interval) for axis in range(3)]
-    grid = torch.stack(torch.meshgrid(grid_range[0], grid_range[1], grid_range[2], indexing='ij'))  # 3 dx dy dz
-    grid = grid.cuda().view(3, -1).permute(1, 0)  # N, 3
+    grid = torch.stack(torch.meshgrid(grid_range[0], grid_range[1], grid_range[2]))  # 3 dx dy dz
+    # grid = grid.cuda().view(3, -1).permute(1, 0)  # N, 3
+    grid = grid.cpu().view(3, -1).permute(1, 0)  # N, 3
     return grid[None]  # 1, N, 3
 
 

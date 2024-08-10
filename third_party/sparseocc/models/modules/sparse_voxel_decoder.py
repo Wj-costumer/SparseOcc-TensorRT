@@ -54,7 +54,7 @@ def upsample(pre_feat, pre_coords, interval):
 
 class SparseVoxelDecoder(BaseModule):
     def __init__(self,
-                 embed_dims=None,
+                 embed_dims,
                  num_layers=None,
                  num_frames=None,
                  num_points=None,

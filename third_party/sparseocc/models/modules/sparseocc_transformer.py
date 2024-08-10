@@ -15,19 +15,27 @@ from .sparse_voxel_decoder import SparseVoxelDecoder
 @TRANSFORMER.register_module()
 class SparseOccTransformer(BaseModule):
     def __init__(self,
-                 embed_dims=None,
-                 num_layers=None,
-                 num_queries=None,
-                 num_frames=None,
-                 num_points=None,
-                 num_groups=None,
-                 num_levels=None,
-                 num_classes=None,
-                 pc_range=None,
-                 occ_size=None,
-                 topk_training=None,
-                 topk_testing=None):
-        super().__init__()
+                 embed_dims,
+                 num_layers,
+                 num_queries,
+                 num_frames,
+                 num_points,
+                 num_groups,
+                 num_levels,
+                 num_classes,
+                 pc_range,
+                 occ_size,
+                 topk_training,
+                 topk_testing):
+        super(SparseOccTransformer, self).__init__(
+            # embed_dims,
+            # num_layers,
+            # num_queries,
+            # num_frames,
+            # num_points,
+            # num_groups,
+            # num_levels
+        )
         self.num_frames = num_frames
         
         self.voxel_decoder = SparseVoxelDecoder(

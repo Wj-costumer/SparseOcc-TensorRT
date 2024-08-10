@@ -9,7 +9,9 @@ from mmdet3d.datasets import NuScenesDataset
 from nuscenes.eval.common.utils import Quaternion
 from nuscenes.utils.geometry_utils import transform_matrix
 from torch.utils.data import DataLoader
-from models.utils import sparse2dense
+import sys
+sys.path.append('/home/robot/wangjia/SparseOcc-TensorRT')
+from third_party import sparse2dense
 from .ray_metrics import main_rayiou, main_raypq
 from .ego_pose_dataset import EgoPoseDataset
 from configs.r50_nuimg_704x256_8f import occ_class_names as occ3d_class_names

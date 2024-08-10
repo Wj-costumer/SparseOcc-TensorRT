@@ -19,7 +19,7 @@ def make_sample_points_from_bbox(query_bbox, offset, pc_range):
     
     delta_xyz = offset[..., 0:3]  # [B, Q, P, 3]
     delta_xyz = wlh[:, :, None, :] * delta_xyz  # [B, Q, P, 3]
-
+    breakpoint()
     if query_bbox.shape[-1] > 6:
         ang = query_bbox[..., 6:7]  # [B, Q, 1]
         delta_xyz = rotation_3d_in_axis(delta_xyz, ang)  # [B, Q, P, 3]
@@ -52,7 +52,7 @@ def make_sample_points_from_mask(valid_map, pc_range, occ_size, num_points, occ_
             sampling_index = (sampling_rand * bin_count[:, None]).floor().long()
             low_bound = torch.cumsum(bin_count, dim=0) - bin_count
             sampling_index = sampling_index + low_bound[:, None]
-            sampling_index[sampling_index >= indices[0].shape[0]] = indices[0].shape[0] -1  # this can happen when zeros appear in the tail
+            sampling_index[sampling_index >= indices[0].shape[0]] = torch.tensor(indices[0].shape[0] -1).to(sampling_index.device)  # this can happen when zeros appear in the tail
             sampling_index = sampling_index.to(valid_map.device)
             
             if occ_loc is None: # dense occ points
@@ -91,6 +91,7 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
                    '{}/sample_points_3d_stage{}.pth'.format(DUMP.out_dir, DUMP.stage_count))
 
     # get the projection matrix
+    lidar2img = lidar2img.reshape(B, T*N, 4, 4)
     lidar2img = lidar2img[:, :(T*N), None, None, :, :]  # [B, TN, 1, 1, 4, 4]
     lidar2img = lidar2img.expand(B, T*N, Q, G * P, 4, 4)
     lidar2img = lidar2img.reshape(B, T, N, Q, G*P, 4, 4)
@@ -153,7 +154,7 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
     scale_weights = scale_weights.permute(0, 2, 3, 1, 4, 5)
     scale_weights = scale_weights.reshape(B*G*T, Q, P, -1)
 
-    final = msmv_sampling(mlvl_feats, sample_points_cam, scale_weights)
+    final = msmv_sampling([feat.cuda() for feat in mlvl_feats], sample_points_cam.cuda(), scale_weights.cuda()).cpu()
     C = final.shape[2]  # [BTG, Q, C, P]
     final = final.reshape(B, T, G, Q, C, P)
     final = final.permute(0, 3, 2, 1, 5, 4)
