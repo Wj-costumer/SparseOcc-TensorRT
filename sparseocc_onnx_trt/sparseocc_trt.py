@@ -101,7 +101,6 @@ class SparseOccTRT(SparseOcc):
 
         B, N, C, H, W = img.shape
         img = img.reshape(B, N//6, 6, C, H, W)
-        breakpoint()
         num_frames = len(img_filenames) // 6
 
         img_shape_ = (H, W, C)

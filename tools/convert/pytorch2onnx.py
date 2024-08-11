@@ -10,7 +10,7 @@ def pytorch2onnx(
     config,
     checkpoint,
     output_file,
-    opset_version=13,
+    opset_version=17,
     verbose=False,
     cuda=True,
     inputs_data=None,

@@ -23,9 +23,8 @@ def msmv_sampling_pytorch(mlvl_feats, sampling_locations, scale_weights):
     for lvl, feat in enumerate(mlvl_feats):
         feat = feat.permute(0, 4, 1, 2, 3)
         out = F.grid_sample(
-            feat, 
-            sampling_locations,
-            align_corners=True,
+            feat, sampling_locations, mode='bilinear',
+            padding_mode='zeros', align_corners=True,
         )[..., 0]  # [B, C, Q, P]
         out = out * scale_weights[..., lvl].reshape(B, 1, Q, P)
         final += out

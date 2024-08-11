@@ -1,8 +1,36 @@
 import torch
+import torch.nn.functional as F
 from ..bbox.utils import decode_bbox
 from ..utils import rotation_3d_in_axis, DUMP
-from ..csrc.wrapper import msmv_sampling
+# from ..csrc.wrapper import msmv_sampling
 
+def msmv_sampling_pytorch(mlvl_feats, sampling_locations, scale_weights):
+    """
+    value: [B, N, H1W1 + H2W2..., C]
+    sampling_locations: [B, Q, P, 3]
+    scale_weights: [B, Q, P, 4]
+    """
+    assert scale_weights.shape[-1] == len(mlvl_feats)
+
+    B, _, _, _, C = mlvl_feats[0].shape
+    _, Q, P, _ = sampling_locations.shape
+
+    sampling_locations = sampling_locations * 2 - 1
+    sampling_locations = sampling_locations[:, :, :, None, :]  # [B, Q, P, 1, 3]
+
+    final = torch.zeros([B, C, Q, P], device=mlvl_feats[0].device)
+
+    for lvl, feat in enumerate(mlvl_feats):
+        feat = feat.permute(0, 4, 1, 2, 3)
+        out = F.grid_sample(
+            feat, 
+            sampling_locations,
+            align_corners=True,
+        )[..., 0] # [B, C, Q, P]
+        out = out * scale_weights[..., lvl].reshape(B, 1, Q, P)
+        final += out
+
+    return final.permute(0, 2, 1, 3)
 
 def make_sample_points_from_bbox(query_bbox, offset, pc_range):
     '''
@@ -19,7 +47,6 @@ def make_sample_points_from_bbox(query_bbox, offset, pc_range):
     
     delta_xyz = offset[..., 0:3]  # [B, Q, P, 3]
     delta_xyz = wlh[:, :, None, :] * delta_xyz  # [B, Q, P, 3]
-    breakpoint()
     if query_bbox.shape[-1] > 6:
         ang = query_bbox[..., 6:7]  # [B, Q, 1]
         delta_xyz = rotation_3d_in_axis(delta_xyz, ang)  # [B, Q, P, 3]
@@ -153,8 +180,8 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
     scale_weights = scale_weights.reshape(B, Q, G, T, P, -1)
     scale_weights = scale_weights.permute(0, 2, 3, 1, 4, 5)
     scale_weights = scale_weights.reshape(B*G*T, Q, P, -1)
-
-    final = msmv_sampling([feat.cuda() for feat in mlvl_feats], sample_points_cam.cuda(), scale_weights.cuda()).cpu()
+    # final = msmv_sampling([feat for feat in mlvl_feats], sample_points_cam, scale_weights)
+    final = msmv_sampling_pytorch([feat for feat in mlvl_feats], sample_points_cam, scale_weights)
     C = final.shape[2]  # [BTG, Q, C, P]
     final = final.reshape(B, T, G, Q, C, P)
     final = final.permute(0, 3, 2, 1, 5, 4)

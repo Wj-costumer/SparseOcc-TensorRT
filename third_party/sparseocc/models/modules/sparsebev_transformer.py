@@ -358,12 +358,17 @@ class AdaptiveMixing(nn.Module):
 
         '''adaptive channel mixing'''
         out = torch.matmul(out, M)
-        out = F.layer_norm(out, [out.size(-2), out.size(-1)])
+        shape_ = (out.size(-2).item(), out.size(-1).item())
+        # , weight=torch.tensor(1.0).expand(shape_).cuda(), bias=torch.tensor(0.0).expand(shape_).cuda()
+        out = F.layer_norm(input=out, normalized_shape=shape_)
         out = self.act(out)
 
         '''adaptive point mixing'''
         out = torch.matmul(S, out)  # implicitly transpose and matmul
-        out = F.layer_norm(out, [out.size(-2), out.size(-1)])
+        shape_ = (out.size(-2).item(), out.size(-1).item())
+        # , weight=torch.tensor(1.0).expand(shape_).cuda(), bias=torch.tensor(0.0).expand(shape_).cuda()
+        out = F.layer_norm(input=out, normalized_shape=shape_)
+
         out = self.act(out)
 
         '''linear transfomation to query dim'''
@@ -424,7 +429,7 @@ class AdaptiveMixingPointOnly(nn.Module):
 
         '''adaptive spatial mixing'''
         out = torch.matmul(S, out)  # implicitly transpose and matmul
-        out = F.layer_norm(out, [out.size(-2), out.size(-1)])
+        out = F.layer_norm(out, [out.size(-2).item(), out.size(-1).item()])
         out = self.act(out)
 
         '''linear transfomation to query dim'''

@@ -141,7 +141,6 @@ class SparseVoxelDecoderLayerTRT(SparseVoxelDecoderLayer):
         )
         
     def forward(self, query_feat, query_bbox, mlvl_feats, img_shape, lidar2img):
-        breakpoint()
         query_pos = self.position_encoder(query_bbox[..., :3])
         query_feat = query_feat + query_pos
 
