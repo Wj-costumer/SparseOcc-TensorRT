@@ -1,6 +1,7 @@
 _base_ = ["r50_nuimg_704x256_8f.py"]
 
 ONNX_PATH = "checkpoints/onnx"
+TENSORRT_PATH = "checkpoints/tensorrt"
 
 model = dict(
     type='SparseOccTRT',
@@ -10,6 +11,20 @@ model = dict(
             type='SparseOccTransformerTRT'
         )
     )
+)
+
+data = dict(
+    samples_per_gpu=1,
+    quant=dict(
+        type={{_base_.dataset_type}},
+        data_root={{_base_.dataset_root}},
+        occ_gt_root={{_base_.occ_gt_root}},
+        ann_file={{_base_.data.train.ann_file}},
+        pipeline={{_base_.test_pipeline}},
+        classes={{_base_.det_class_names}},
+        modality={{_base_.input_modality}},
+        test_mode=True
+    ),
 )
 
 # batch_size, num_classes, img_h, img_w
@@ -37,5 +52,7 @@ output_shapes = dict(
     sem_pred=[1, 32000],
     occ_loc=[1, 32000, 3]
 )
+
+dynamic_input = None
 
 use_filename=True

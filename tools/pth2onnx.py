@@ -49,7 +49,7 @@ def convert_grid_sample_mode(mode_s):
     
 @_onnx_symbolic("aten::grid_sampler")
 @symbolic_helper.parse_args("v", "v", "i", "i", "b")
-def _grid_sampler(
+def grid_sampler(
     g: jit_utils.GraphContext,
     input: _C.Value,
     grid: _C.Value,
@@ -82,30 +82,30 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-@_onnx_symbolic("aten::layer_norm")
-@symbolic_helper.parse_args("v", "is", "v", "v", "f", "none")
-def layer_norm(
-    g: jit_utils.GraphContext,
-    input: _C.Value,
-    normalized_shape: Sequence[int],
-    weight: _C.Value,
-    bias: _C.Value,
-    eps: float,
-    cudnn_enable: bool,
-):
-    # normalized_shape: input shape from an expected input of size
-    # axis: The first normalization dimension.
-    # layer_norm normalizes on the last D dimensions,
-    # where D is the size of normalized_shape
-    axis = -len(normalized_shape)
-    return g.op(
-        "LayerNormalization",
-        input,
-        weight,
-        bias,
-        epsilon_f=eps,
-        axis_i=axis,
-    )
+# @_onnx_symbolic("aten::layer_norm")
+# @symbolic_helper.parse_args("v", "is", "v", "v", "f", "none")
+# def layer_norm(
+#     g: jit_utils.GraphContext,
+#     input: _C.Value,
+#     normalized_shape: Sequence[int],
+#     weight: _C.Value,
+#     bias: _C.Value,
+#     eps: float,
+#     cudnn_enable: bool,
+# ):
+#     # normalized_shape: input shape from an expected input of size
+#     # axis: The first normalization dimension.
+#     # layer_norm normalizes on the last D dimensions,
+#     # where D is the size of normalized_shape
+#     axis = -len(normalized_shape)
+#     return g.op(
+#         "LayerNorm",
+#         input,
+#         weight,
+#         bias,
+#         epsilon_f=eps,
+#         axis_i=axis,
+#     )
     
 def main():
     args = parse_args()
@@ -126,7 +126,7 @@ def main():
         quant_nn.TensorQuantizer.use_fb_fake_quant = True
     if args.flag:
         output += f"_{args.flag}"
-    output_file = os.path.join(config.ONNX_PATH, output + "_2.onnx")
+    output_file = os.path.join(config.ONNX_PATH, output + "_4.onnx")
 
     pytorch2onnx(
         config,

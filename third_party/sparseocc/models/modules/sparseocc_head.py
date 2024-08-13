@@ -147,7 +147,7 @@ class SparseOccHead(nn.Module):
     # https://github.com/facebookresearch/MaskFormer/blob/main/mask_former/mask_former_model.py#L242
     def merge_semseg(self, mask_cls, mask_pred):
         valid_mask = mask_cls.max(dim=-1).values > self.score_threshold
-        mask_cls[~valid_mask] = 0.0
+        mask_cls[~valid_mask, :] = 0.0
 
         semseg = torch.einsum("bqc,bqn->bcn", mask_cls, mask_pred)
         if semseg.shape[1] == self.num_classes:

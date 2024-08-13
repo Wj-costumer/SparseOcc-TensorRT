@@ -197,12 +197,12 @@ class MaskFormerOccDecoderLayer(BaseModule):
             occ_loc: [bs, num_voxel, 3]
         """
         occ_loc, occ_pred, _, mask_feat, _ = occ_preds[-1]
-        query_feat = self.norm1(self.self_attn(query_feat, query_pos=query_pos))
+        # query_feat = self.norm1(self.self_attn(query_feat, query_pos=query_pos))
 
         sampled_feat = self.sampling(query_feat, valid_map, occ_loc, mlvl_feats, img_metas)
-        query_feat = self.norm2(self.mixing(sampled_feat, query_feat))
+        # query_feat = self.norm2(self.mixing(sampled_feat, query_feat))
         
-        query_feat = self.norm3(self.ffn(query_feat))
+        # query_feat = self.norm3(self.ffn(query_feat))
         
         valid_map, mask_pred, class_pred = self.pred_segmentation(query_feat, mask_feat)
         return query_feat, valid_map, mask_pred, class_pred

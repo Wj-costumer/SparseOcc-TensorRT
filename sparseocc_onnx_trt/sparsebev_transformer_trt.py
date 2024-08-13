@@ -54,7 +54,10 @@ class SparseBEVSamplingTRT(SparseBEVSampling):
         scale_weights = self.scale_weights(query_feat).view(B, Q, self.num_groups, 1, self.num_points, self.num_levels)
         scale_weights = torch.softmax(scale_weights, dim=-1)
         scale_weights = scale_weights.expand(B, Q, self.num_groups, self.num_frames, self.num_points, self.num_levels)
-
+        
+        # dim_1, dim_2, dim_3, dim_4, dim_5, dim_6 = scale_weights.shape
+        # return scale_weights.reshape(dim_1, dim_2, dim_3, dim_4*dim_5, dim_6).repeat(1, 1, 1, 1, 16)
+        
         # sampling
         sampled_feats = sampling_4d(
             sampling_points,

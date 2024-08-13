@@ -175,8 +175,8 @@ class MaskFormerOccDecoderLayerTRT(MaskFormerOccDecoderLayer):
         occ_loc, occ_pred, _, mask_feat, _ = occ_preds[-1]
         query_feat = self.norm1(self.self_attn(query_feat, query_pos=query_pos))
 
-        sampled_feat = self.sampling(query_feat, valid_map, occ_loc, mlvl_feats, img_shape, lidar2img)
-        query_feat = self.norm2(self.mixing(sampled_feat, query_feat))
+        # sampled_feat = self.sampling(query_feat, valid_map, occ_loc, mlvl_feats, img_shape, lidar2img)
+        # query_feat = self.norm2(self.mixing(sampled_feat, query_feat))
         
         query_feat = self.norm3(self.ffn(query_feat))
         

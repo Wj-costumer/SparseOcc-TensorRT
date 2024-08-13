@@ -358,17 +358,24 @@ class AdaptiveMixing(nn.Module):
 
         '''adaptive channel mixing'''
         out = torch.matmul(out, M)
-        shape_ = (out.size(-2).item(), out.size(-1).item())
-        # , weight=torch.tensor(1.0).expand(shape_).cuda(), bias=torch.tensor(0.0).expand(shape_).cuda()
-        out = F.layer_norm(input=out, normalized_shape=shape_)
+        
+        if out.shape[-2] == 8:
+            out = F.layer_norm(input=out, normalized_shape=[8, 64], weight=torch.ones([8, 64]).cuda()) 
+        elif out.shape[-2] == 16:
+            out = F.layer_norm(input=out, normalized_shape=[16, 64], weight=torch.ones([16, 64]).cuda()) 
+        elif out.shape[-2] == 32:
+            out = F.layer_norm(input=out, normalized_shape=[32, 64], weight=torch.ones([32, 64]).cuda()) 
         out = self.act(out)
-
+        
         '''adaptive point mixing'''
         out = torch.matmul(S, out)  # implicitly transpose and matmul
-        shape_ = (out.size(-2).item(), out.size(-1).item())
-        # , weight=torch.tensor(1.0).expand(shape_).cuda(), bias=torch.tensor(0.0).expand(shape_).cuda()
-        out = F.layer_norm(input=out, normalized_shape=shape_)
-
+        
+        if out.shape[-2] == 8:
+            out = F.layer_norm(input=out, normalized_shape=[8, 64], weight=torch.ones([8, 64]).cuda()) 
+        elif out.shape[-2] == 16:
+            out = F.layer_norm(input=out, normalized_shape=[16, 64], weight=torch.ones([16, 64]).cuda()) 
+        elif out.shape[-2] == 128:
+            out = F.layer_norm(input=out, normalized_shape=[128, 64], weight=torch.ones([128, 64]).cuda()) 
         out = self.act(out)
 
         '''linear transfomation to query dim'''

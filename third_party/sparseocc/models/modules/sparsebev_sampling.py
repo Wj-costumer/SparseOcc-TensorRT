@@ -47,6 +47,7 @@ def make_sample_points_from_bbox(query_bbox, offset, pc_range):
     
     delta_xyz = offset[..., 0:3]  # [B, Q, P, 3]
     delta_xyz = wlh[:, :, None, :] * delta_xyz  # [B, Q, P, 3]
+
     if query_bbox.shape[-1] > 6:
         ang = query_bbox[..., 6:7]  # [B, Q, 1]
         delta_xyz = rotation_3d_in_axis(delta_xyz, ang)  # [B, Q, P, 3]
@@ -119,7 +120,7 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
 
     # get the projection matrix
     lidar2img = lidar2img.reshape(B, T*N, 4, 4)
-    lidar2img = lidar2img[:, :(T*N), None, None, :, :]  # [B, TN, 1, 1, 4, 4]
+    lidar2img = lidar2img.reshape(B, (T*N), 1, 1, 4, 4)  # [B, TN, 1, 1, 4, 4]
     lidar2img = lidar2img.expand(B, T*N, Q, G * P, 4, 4)
     lidar2img = lidar2img.reshape(B, T, N, Q, G*P, 4, 4)
 
@@ -131,13 +132,13 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
     sample_points = sample_points.transpose(1, 3)   # [B, T, N, Q, GP, 4, 1]
 
     # project 3d sampling points to image
-    sample_points_cam = torch.matmul(lidar2img, sample_points).squeeze(-1)  # [B, T, N, Q, GP, 4]
+    sample_points_cam = torch.matmul(lidar2img, sample_points)[..., 0] #.squeeze(-1)  # [B, T, N, Q, GP, 4]
 
     # homo coord -> pixel coord
     homo = sample_points_cam[..., 2:3]
-    homo_nonzero = torch.maximum(homo, torch.zeros_like(homo) + eps)
+    homo_nonzero = torch.max(homo, torch.zeros_like(homo) + eps)
     sample_points_cam = sample_points_cam[..., 0:2] / homo_nonzero  # [B, T, N, Q, GP, 2]
-
+    
     # normalize
     sample_points_cam[..., 0] /= image_w
     sample_points_cam[..., 1] /= image_h
@@ -149,7 +150,8 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
         & (sample_points_cam[..., 0:1] > 0.0)
         & (sample_points_cam[..., 0:1] < 1.0)
     ).squeeze(-1).float()  # [B, T, N, Q, GP]
-
+    valid_mask = torch.randn(B, T, N, Q, G*P).float().cuda()
+    
     if DUMP.enabled:
         torch.save(torch.cat([sample_points_cam, homo_nonzero], dim=-1),
                    '{}/sample_points_cam_stage{}.pth'.format(DUMP.out_dir, DUMP.stage_count))
@@ -180,12 +182,12 @@ def sampling_4d(sample_points, mlvl_feats, scale_weights, lidar2img, image_h, im
     scale_weights = scale_weights.reshape(B, Q, G, T, P, -1)
     scale_weights = scale_weights.permute(0, 2, 3, 1, 4, 5)
     scale_weights = scale_weights.reshape(B*G*T, Q, P, -1)
+    
     # final = msmv_sampling([feat for feat in mlvl_feats], sample_points_cam, scale_weights)
     final = msmv_sampling_pytorch([feat for feat in mlvl_feats], sample_points_cam, scale_weights)
     C = final.shape[2]  # [BTG, Q, C, P]
     final = final.reshape(B, T, G, Q, C, P)
     final = final.permute(0, 3, 2, 1, 5, 4)
     final = final.flatten(3, 4)  # [B, Q, G, FP, C]
-
     return final
 

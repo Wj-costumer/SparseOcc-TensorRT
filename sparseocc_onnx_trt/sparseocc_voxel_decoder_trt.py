@@ -36,6 +36,8 @@ class SparseVoxelDecoderTRT(SparseVoxelDecoder):
         self.lift_feat_heads = nn.ModuleList()
         #self.occ_pred_heads = nn.ModuleList()
         
+        self.topk = self.topk_training if self.training else self.topk_testing
+        
         if semantic:
             self.seg_pred_heads = nn.ModuleList()
 
@@ -61,8 +63,6 @@ class SparseVoxelDecoderTRT(SparseVoxelDecoder):
     def forward(self, mlvl_feats, img_shape, lidar2img):
         occ_preds = []
         
-        topk = self.topk_training if self.training else self.topk_testing
-
         B = 1
         # init query coords
         interval = 2 ** self.num_layers
@@ -93,8 +93,19 @@ class SparseVoxelDecoderTRT(SparseVoxelDecoder):
 
             # sparsify after seg_pred
             non_free_prob = 1 - F.softmax(seg_pred_2x, dim=-1)[..., -1]  # [B, K]
-            indices = torch.topk(non_free_prob, k=topk[i], dim=1)[1]  # [B, K]
-
+            # breakpoint()
+            # indices_lst = []
+            # block_num = self.topk[i] // 1000
+            # for j in range(block_num):
+            #     block_size = non_free_prob.shape[1] // block_num 
+            #     indices = torch.topk(non_free_prob[:, block_size*j:block_size * (j+1)], k=1000, dim=1)[1] + block_size * j  # [B, K]
+            #     indices_lst.append(indices)
+            # indices = torch.cat(indices_lst).reshape(1, -1)
+            
+            # remember to change this part
+            indices = torch.arange(0, self.topk[i]).unsqueeze(0)
+            
+            # breakpoint()
             query_coord_2x = batch_indexing(query_coord_2x, indices, layout='channel_last')  # [B, K, 3]
             query_feat_2x = batch_indexing(query_feat_2x, indices, layout='channel_last')  # [B, K, C]
             seg_pred_2x = batch_indexing(seg_pred_2x, indices, layout='channel_last')  # [B, K, CLS]
